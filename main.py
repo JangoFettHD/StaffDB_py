@@ -53,6 +53,37 @@ class database:
         database.save(db)
 
     @staticmethod
+    def sumofpayments(db):
+        err = '\033[91m' + "База данных пуста!" + '\033[0m'
+        if "staff" in db.keys():
+            if not (len(db["staff"]) == 0):
+                summ = 0
+                for i in range(len(db["staff"])):
+                    persona = database.getStaff(db["staff"][i])
+                    summ += persona.payroll_preparation(1)
+                print(summ*input_int("Введите количество дней: "))
+            else:
+                print(err)
+        else:
+            print(err)
+
+    @staticmethod
+    def staffpensia(db):
+        err = '\033[91m' + "База данных пуста!" + '\033[0m'
+        if "staff" in db.keys():
+            if not (len(db["staff"]) == 0):
+                ye=input_int("Введите количество лет: ")
+                for i in range(len(db["staff"])):
+                    persona = database.getStaff(db["staff"][i])
+                    if persona.years_until_retirement()==ye:
+                        print(persona)
+            else:
+                print(err)
+        else:
+            print(err)
+
+
+    @staticmethod
     def add(db):
         dct = {}
 
@@ -145,11 +176,11 @@ class staff():
 
     def payroll_preparation(self, days):
         payroll_preparation = days * (self.cph * hours) * self.mf
-        print(payroll_preparation)
+        #print(payroll_preparation)
         return payroll_preparation
 
     def years_until_retirement(self):
-        return print(pension - self.age)
+        return pension - self.age
 
 
 #######
@@ -190,9 +221,9 @@ def show_staff():
     if "staff" in db.keys():
         if not (len(db["staff"]) == 0):
             index = -1
-            while not(0 < index < len(db["staff"])+1):
+            while not (0 < index < len(db["staff"]) + 1):
                 index = input_int("Введите id работника: ", '\033[91m' + "Данного работника не существует!" + '\033[0m')
-            persona = database.getStaff(db["staff"][index-1])
+            persona = database.getStaff(db["staff"][index - 1])
             print(persona)
             menu = ["Рассчитать заработок за нес-ко дней.", "Узнать ск-ко лет осталось до пенсии.", "Назад"]
             while True:
@@ -202,9 +233,9 @@ def show_staff():
                 selection = input_int(">>  ")
                 if 0 < selection < (len(menu) + 1):
                     if selection == 1:
-                        persona.payroll_preparation(input_int("Введите количество дней: "))
+                        print(persona.payroll_preparation(input_int("Введите количество дней: ")))
                     elif selection == 2:
-                        persona.years_until_retirement()
+                        print(persona.years_until_retirement())
                     elif selection == 3:
                         break
                 else:
@@ -216,7 +247,9 @@ def show_staff():
 
 
 def show_menu():
-    menu = ["Добавить работника.", "Удалить работника.", "Показать всех работников.", "Выбрать работника.", "Выйти"]
+    menu = ["Добавить работника.", "Удалить работника.", "Показать всех работников.", "Выбрать работника.",
+            "Вывести суммарную зарплату всех работников.", "Вывести работников, которым до пенсии осталось N лет.",
+            "Выйти"]
     while True:
         print("Введите , что вы хотите сделать:")
         for i in range(len(menu)):
@@ -233,6 +266,10 @@ def show_menu():
             elif selection == 4:
                 show_staff()
             elif selection == 5:
+                database.sumofpayments(db)
+            elif selection == 6:
+                database.staffpensia(db)
+            elif selection == 7:
                 break
         else:
             print('\033[91m' + "Вы хотите открыть несуществующий элемент меню!" + '\033[0m')
