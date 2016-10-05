@@ -3,7 +3,8 @@ import json
 
 # init
 db_directory = "db.txt"
-pension = 50
+pension = 65
+hours = 8
 
 
 #######
@@ -19,11 +20,11 @@ class database:
 
     @staticmethod
     def printelement(index, db):
-        print(database.dct_to_staff(db["staff"][index]))
+        print(database.getStaff(db["staff"][index]))
 
     @staticmethod
     def load():
-        db={}
+        db = {}
         with open(db_directory, "r+") as f:
             content = str(f.read())
             f.seek(0)
@@ -72,29 +73,28 @@ class database:
 
         cph = -1
         while int(cph) < 0:
-            print("Введите зарплату в час: ")
-            cph = input_int()
+            cph = input_int("Введите зарплату в час: ")
         dct["cph"] = cph
 
         mf = -1
         while float(mf) < 0:
-            mf = input_int("Введите повышающий коеффициент: ")
+            mf = input_float("Введите повышающий коэффициент: ")
         dct["mf"] = mf
 
         # pers = staff(dct["name"], dct["post"], dct["age"], dct["cph"], dct["mf"])
         database.add_dct_to_db(dct, db)
-        
+
     @staticmethod
-    def dct_to_staff(dct):
+    def getStaff(dct):
         return staff(dct["name"], dct["post"], dct["age"], dct["cph"], dct["mf"])
 
     @staticmethod
     def printallstaff(db):
-        err='\033[91m' + "База данных пуста!" + '\033[0m'
+        err = '\033[91m' + "База данных пуста!" + '\033[0m'
         if "staff" in db.keys():
-            if not(len(db["staff"])==0):
+            if not (len(db["staff"]) == 0):
                 for i in range(len(db["staff"])):
-                    print(str(i + 1) + ") " + str(database.dct_to_staff(db["staff"][i])))
+                    print(str(i + 1) + ") " + str(database.getStaff(db["staff"][i])))
             else:
                 print(err)
         else:
@@ -105,20 +105,19 @@ class database:
         err = '\033[91m' + "База данных пуста!" + '\033[0m'
         if "staff" in db.keys():
             if not (len(db["staff"]) == 0):
-                element=-1
+                element = -1
                 while True:
                     element = input_int("Введите id для удаления: ")
-                    if 0<element<len(db["staff"])+1:
+                    if 0 < element < len(db["staff"]) + 1:
                         break
                     else:
                         print('\033[91m' + "Такого элемента не существует!" + '\033[0m')
-                db["staff"].pop(element-1)
+                db["staff"].pop(element - 1)
                 database.save(db)
             else:
                 print(err)
         else:
             print(err)
-
 
 
 #######
@@ -127,7 +126,7 @@ class staff():
     name = "Steve"
     post = "Developer"
     age = 22
-    cph = 50.00  # 8-часовой рабочий день
+    cph = 50.00
     mf = 1.0
 
     def __init__(self, name, post, age, cph, mf):
@@ -145,12 +144,12 @@ class staff():
                                                                                                            self.mf)
 
     def payroll_preparation(self, days):
-        payroll_preparation = days * (self.cph * 8) * self.mf
+        payroll_preparation = days * (self.cph * hours) * self.mf
         print(payroll_preparation)
         return payroll_preparation
 
     def years_until_retirement(self):
-        return pension - self.age
+        return print(pension - self.age)
 
 
 #######
@@ -175,8 +174,49 @@ def input_int(str="", err='\033[91m' + "Нужно вводить число, а
             return inp
 
 
+def input_float(str="", err='\033[91m' + "Нужно вводить число, а не букву!" + '\033[0m'):
+    while True:
+        inp = ""
+        try:
+            inp = float(input(str))
+        except ValueError:
+            print(err)
+        if isinstance(inp, float):
+            return inp
+
+
+def show_staff():
+    err = '\033[91m' + "База данных пуста!" + '\033[0m'
+    if "staff" in db.keys():
+        if not (len(db["staff"]) == 0):
+            index = -1
+            while not(0 < index < len(db["staff"])+1):
+                index = input_int("Введите id работника: ", '\033[91m' + "Данного работника не существует!" + '\033[0m')
+            persona = database.getStaff(db["staff"][index-1])
+            print(persona)
+            menu = ["Рассчитать заработок за нес-ко дней.", "Узнать ск-ко лет осталось до пенсии.", "Назад"]
+            while True:
+                print("Введите , что вы хотите сделать:")
+                for i in range(len(menu)):
+                    print("{0} - {1}".format(i + 1, menu[i]))
+                selection = input_int(">>  ")
+                if 0 < selection < (len(menu) + 1):
+                    if selection == 1:
+                        persona.payroll_preparation(input_int("Введите количество дней: "))
+                    elif selection == 2:
+                        persona.years_until_retirement()
+                    elif selection == 3:
+                        break
+                else:
+                    print('\033[91m' + "Вы хотите открыть несуществующий элемент меню!" + '\033[0m')
+        else:
+            print(err)
+    else:
+        print(err)
+
+
 def show_menu():
-    menu = ["Добавить работника.", "Удалить работника.", "Показать вех работников.", "Выйти"]
+    menu = ["Добавить работника.", "Удалить работника.", "Показать всех работников.", "Выбрать работника.", "Выйти"]
     while True:
         print("Введите , что вы хотите сделать:")
         for i in range(len(menu)):
@@ -191,6 +231,8 @@ def show_menu():
             elif selection == 3:
                 database.printallstaff(db)
             elif selection == 4:
+                show_staff()
+            elif selection == 5:
                 break
         else:
             print('\033[91m' + "Вы хотите открыть несуществующий элемент меню!" + '\033[0m')
